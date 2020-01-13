@@ -13,23 +13,22 @@
 import sys
 import binascii
 from   Crypto.Cipher import AES
-from   itertools import izip
-
+from collections import OrderedDict
 
 #Our macro
-__XOR__ = lambda x, y: chr(ord(x) ^ ord(y)) 
+__XOR__ = lambda x, y: x ^ y
 
 
 def LogicalXOR(str1, str2):
     '''Function to XOR two strings'''
-    return ''.join(__XOR__(x, y) for (x,y) in izip(str1, str2))
+    return b''.join(bytes([__XOR__(x, y)]) for (x,y) in zip(str1, str2))
 
 
 def AESEncrypt(key, buf):
     '''Encrypt buffer using AES-SHA1 128 algorithm
        @key: Key to be used for encryption
        @buf: Buffer to be encrypted'''
-    encryptor = AES.new(key, AES.MODE_CBC)
+    encryptor = AES.new(key, AES.MODE_ECB)
     return encryptor.encrypt(buf)
 
 
@@ -47,26 +46,27 @@ def GsmMilenageF2345(ki, opc, rand):
     tmp1 = LogicalXOR(rand, opc)
     tmp2 = AESEncrypt(ki, tmp1)
     tmp1 = LogicalXOR(tmp2, opc)
-    tmp1 = tmp1[:15] + chr(ord(tmp1[15]) ^ 1)
+    tmp1 = tmp1[:15] + bytes([tmp1[15] ^ 1])
     tmp3 = AESEncrypt(ki, tmp1)
     tmp3 = LogicalXOR(tmp3, opc)
     res  = tmp3[8:]
 
     #F3 - to calculate ck
     ck_map = {}
+
     for i in range(16):
         ck_map[(i+12)%16] = __XOR__(tmp2[i], opc[i])
-    ck_map[15] = __XOR__(ck_map[15], chr(2))
-    tmp1 = ''.join(val for val in ck_map.values())
+    ck_map[15] = ck_map[15] ^ 2
+    tmp1 = b''.join(bytes([ck_map[val]]) for val in sorted(ck_map))
     ck = AESEncrypt(ki, tmp1)
     ck = LogicalXOR(ck, opc)
 
     #F4 - to calculate ik
-    ik_map = {}
+    ik_map = OrderedDict()
     for i in range(16):
         ik_map[(i+8)%16] = __XOR__(tmp2[i], opc[i])
-    ik_map[15] = __XOR__(ik_map[15], chr(4))
-    tmp1 = ''.join(val for val in ik_map.values())
+    ik_map[15] = ik_map[15] ^ 4
+    tmp1 = b''.join(bytes([ik_map[val]]) for val in sorted(ik_map))
     ik = AESEncrypt(ki, tmp1)
     ik = LogicalXOR(ik, opc)
 
@@ -80,19 +80,19 @@ def GsmMilenage(ki, opc, rand):
        @rand: 128-bit random challenge'''
 
     res, ck, ik = GsmMilenageF2345(ki, opc, rand)
-
     #Calculate sres
     sres_map = {}
     for idx in range(4):
-        sres_map[idx] = __XOR__(res[idx], res[idx+4])
-    sres = ''.join(val for val in sres_map.values())
+        sres_map[idx] = res[idx] ^ res[idx+4]
+    sres = b''.join(bytes([val]) for val in sres_map.values())
 
     #Calculate kc
     kc_map = {}
     for idx in range(8):
         kc_map[idx] = __XOR__(__XOR__(ck[idx], ck[idx+8]),
                               __XOR__(ik[idx], ik[idx+8]))
-    kc = ''.join(val for val in kc_map.values())
+
+    kc = b''.join(bytes([val]) for val in kc_map.values())
 
     return sres, kc
 
@@ -121,7 +121,7 @@ def ReadMilenageInput(filename):
     try:
        fp = open(filename)
     except:
-       print 'Error opening file %s'%(filename)
+       print('Error opening file %s'%(filename))
        sys.exit()
 
     for line in fp.readlines():
@@ -139,14 +139,14 @@ def ReadMilenageInput(filename):
 
     #Validate input
     if len(attribs) == 0:
-       print 'Milenage: Please provide KI/OP/RAND in input file'
+       print('Milenage: Please provide KI/OP/RAND in input file')
        sys.exit()
 
     for keyset in attribs:
-       if not keyset.has_key('ki') or \
-          not keyset.has_key('op') or \
-          not keyset.has_key('rand'):
-          print 'Milenage: KI or OP missing in keyset'
+       if not 'ki' in keyset or \
+          not 'op' in keyset or \
+          not 'rand' in keyset:
+          print('Milenage: KI or OP missing in keyset')
           sys.exit()
 
     return attribs
@@ -156,14 +156,14 @@ def PrintMilenageOutput(attribs):
     '''Prints input read'''
     idx = 1
     for keyset in attribs:
-       print 'Keyset # %d'%(idx)
-       print '  %2s: %s'%('ki', keyset['ki']) 
-       print '  %2s: %s'%('op', keyset['op']) 
-       print '  Auth Triplets: '
-       print '    %4s: %s'%('rand', keyset['rand']) 
-       print '    %4s: %s'%('sres', keyset['sres']) 
-       print '    %4s: %s'%('kc',   keyset['kc']) 
-       print ''
+       print('Keyset # %d'%(idx))
+       print('  %2s: %s'%('ki', keyset['ki']))
+       print('  %2s: %s'%('op', keyset['op']))
+       print('  Auth Triplets: ')
+       print('    %4s: %s'%('rand', keyset['rand']))
+       print('    %4s: %s'%('sres', keyset['sres']))
+       print('    %4s: %s'%('kc',   keyset['kc']))
+       print('')
        idx += 1 
     return
     
@@ -171,7 +171,7 @@ def PrintMilenageOutput(attribs):
 def main():
     '''The main function'''
     if len(sys.argv) < 2:
-       print 'Milenage: Please provide input file'
+       print('Milenage: Please provide input file')
        return
 
     #Read input
