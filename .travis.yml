@@ -10,7 +10,7 @@ python:
 install:
   - pip install pycodestyle pytest pytest-cov pycryptodome
 before_script:
-  - pycodestyle --max-line-length=200
+  - pycodestyle --max-line-length=200 milenage.py
   - pip install -e .
 script:
   - pytest --cov=milenage
