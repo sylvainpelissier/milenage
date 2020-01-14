@@ -182,6 +182,7 @@ def main():
         GenerateAuthTriplets(keyset)
 
     #Print output
+    print(attribs)
     PrintMilenageOutput(attribs)
     return
 

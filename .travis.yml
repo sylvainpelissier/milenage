@@ -1,0 +1,16 @@
+dist: bionic
+language: python
+python:
+  - 3.5
+  - 3.6
+  - 3.7
+  - 3.8
+  - nightly
+
+install:
+  - pip install pycodestyle pytest pytest-cov pycryptodome
+before_script:
+  - pycodestyle --max-line-length=200 --ignore=E402,W605 */*.py
+  - pip install -e .
+script:
+  - pytest --cov=milenage
