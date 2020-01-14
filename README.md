@@ -1,8 +1,5 @@
 # Milenage
-
-.. image:: https://travis-ci.org/sylvainpelissier/milenage.svg
-    :target: https://travis-ci.org/sylvainpelissier/milenage
-    :alt: Travis
+[![Build Status](https://travis-ci.org/sylvainpelissier/milenage.svg?branch=master)](https://travis-ci.org/sylvainpelissier/milenage)
 
 This program can be used to generate GSM authentication triplets
 using milenage algorithm specified in 3GPP TS 55.205 v9.0.0. These
