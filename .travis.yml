@@ -8,6 +8,6 @@ python:
   - nightly
 
 install:
-  - pip install pycodestyle pytest pytest-cov pycryptodome
+  - pip install pytest pycryptodome
 script:
   - pytest

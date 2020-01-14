@@ -1,5 +1,9 @@
 # Milenage
 
+.. image:: https://travis-ci.org/sylvainpelissier/milenage.svg
+    :target: https://travis-ci.org/sylvainpelissier/milenage
+    :alt: Travis
+
 This program can be used to generate GSM authentication triplets
 using milenage algorithm specified in 3GPP TS 55.205 v9.0.0. These
 authentication triplets can be used to test EAP-SIM with real UE
