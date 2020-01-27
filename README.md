@@ -7,7 +7,7 @@ authentication triplets can be used to test EAP-SIM with real UE
 and freeradius server.
 
 ## Installing
-The program is supported by Python 3 only. You need to have pycrytodome installed to run the prigram. You can install it as follows:
+The program is supported by Python 3 only. You need to have pycrytodome installed to run the program. You can install it as follows:
 ```bash
 pip install pycryptodome --user
 ```
